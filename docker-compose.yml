@@ -61,12 +61,6 @@ services:
     image: postgres
     ports:
       - "7003:5432"
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_USER: arquisoft
-      MYSQL_PASSWORD: 123
-      MYSQL_DATABASE: ratings
-      MYSQL_HOST: ratings-db
   ratings-ms:
     image: miavillamilca/2C_ratings_ms
     command: python3 manage.py runserver 0.0.0.0:6003
