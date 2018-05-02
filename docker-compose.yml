@@ -69,7 +69,7 @@ services:
       MYSQL_HOST: ratings-db
   ratings-ms:
     image: miavillamilca/2C_ratings_ms
-    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6003 -b '0.0.0.0'"
+    command: python3 manage.py runserver 0.0.0.0:6003
     environment:
       PORT: '6003'
     depends_on:
