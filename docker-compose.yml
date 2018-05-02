@@ -21,8 +21,8 @@ services:
       AUTH_ENTRY: 'ldap/'
       LOGIN_PORT: '6004'
       LOGIN_ENTRY: 'auth/'
-      BIKEROUTES_PORT: '6005'
-      BIKEROUTES_ENTRY: 'bikeroutes/'
+      BIKEROUTES_PORT: '6002'
+      BIKEROUTES_ENTRY: 'route/'
   routes-db:
     image: mysql:5.7.22
     ports:
@@ -96,16 +96,17 @@ services:
     ports:
       - "7002:7002"
     environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_USER: arquisoft
-      MYSQL_PASSWORD: 123
-      MYSQL_DATABASE: bikeroutes
-      MYSQL_HOST: bikeroutes-db
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+      - MONGO_HOST=bikeroutes-db
+    volumes:
+      - /data/db:/data/db
+    command: mongod --smallfiles --logpath=/dev/null --port 7002 -v
   bikeroutes-ms:
-    image: miavillamilca/2C_bikeRoutes_ms
-    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6002 -b '0.0.0.0'"
-    environment:
-      PORT: '6002'
+    build: .
+    command: sails lift --verbose --port 6002
+    ports:
+      - "6002:6002"
     depends_on:
       - bikeroutes-db
   runapp-ldap:
