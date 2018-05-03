@@ -1,13 +1,13 @@
 version: '2.1'
 services:
   runapp-proxy:
-    image: miavillamilca/2C_runapp_proxy
+    image: miavillamilca/2c_runapp_proxy
     depends_on:
       - runapp-api
     ports:
       - 80:80
   runapp-api:
-    image: miavillamilca/2C_runapp_api
+    image: miavillamilca/2c_runapp_api
     environment:
       PORT: '8000'
       SHOW_URLS: 'true'
@@ -17,7 +17,7 @@ services:
       ROUTES_ENTRY: 'routes/'
       RATINGS_PORT: '6003'
       RATINGS_ENTRY: 'ratings/'
-      AUTH_PORT: '6010'
+      AUTH_PORT: '6004'
       AUTH_ENTRY: 'ldap/'
       LOGIN_PORT: '6004'
       LOGIN_ENTRY: 'auth/'
@@ -34,7 +34,7 @@ services:
       MYSQL_DATABASE: routes
       MYSQL_HOST: routes-db
   routes-ms:
-    image: miavillamilca/2C_routes_ms
+    image: miavillamilca/2c_routes_ms
     command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6001 -b '0.0.0.0'"
     environment:
       PORT: '6001'
@@ -51,7 +51,7 @@ services:
       MYSQL_DATABASE: vehicle
       MYSQL_HOST: vehicle-db
   vehicle-ms:
-    image: miavillamilca/2C_vehicles_ms
+    image: miavillamilca/2c_vehicles_ms
     command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6005 -b '0.0.0.0'"
     environment:
       PORT: '6005'
@@ -62,7 +62,7 @@ services:
     ports:
       - "7003:5432"
   ratings-ms:
-    image: miavillamilca/2C_ratings_ms
+    image: miavillamilca/2c_ratings_ms
     command: python3 manage.py runserver 0.0.0.0:6003
     environment:
       PORT: '6003'
@@ -79,30 +79,12 @@ services:
       MYSQL_DATABASE: login
       MYSQL_HOST: login-db
   login-ms:
-    image: miavillamilca/2C_login_ms
-    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6005 -b '0.0.0.0'"
+    image: miavillamilca/2c_login_ms
+    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6004 -b '0.0.0.0'"
     environment:
-      PORT: '6005'
+      PORT: '6004'
     depends_on:
       - login-db
-  bikeroutes-db:
-    image: mongo
-    ports:
-      - "7002:7002"
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-      - MONGO_HOST=bikeroutes-db
-    volumes:
-      - /data/db:/data/db
-    command: mongod --smallfiles --logpath=/dev/null --port 7002 -v
-  bikeroutes-ms:
-    build: .
-    command: sails lift --verbose --port 6002
-    ports:
-      - "6002:6002"
-    depends_on:
-      - bikeroutes-db
   runapp-ldap:
     image: osixia/openldap:1.1.8
     container_name: runapp-ldap
