@@ -13,6 +13,8 @@ services:
       SHOW_URLS: 'true'
       VEHICLES_PORT: '6005'
       VEHICLES_ENTRY: 'vehicles/'
+      FAVROUTES_PORT: '6005'
+      FAVROUTES_ENTRY: 'fav_routes/'
       ROUTES_PORT: '6001'
       ROUTES_ENTRY: 'routes/'
       RATINGS_PORT: '6003'
@@ -40,23 +42,21 @@ services:
       PORT: '6001'
     depends_on:
       - routes-db
-  vehicle-db:
-    image: mysql:5.7.22
+  vehicles-db:
+    image: mongo:latest
+    container_name: vehicles-db
     ports:
       - "27017:27017"
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_USER: arquisoft
-      MYSQL_PASSWORD: 123
-      MYSQL_DATABASE: vehicle
-      MYSQL_HOST: vehicle-db
-  vehicle-ms:
+    volumes:
+      - "mongodata:/data/2C_vehicle_db"
+    networks:
+      - vehicles-db
+  vehicles-ms:
     image: miavillamilca/2c_vehicles_ms
-    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6005 -b '0.0.0.0'"
+    container_name: vehicles-ms
+    command: bash -c "sleep 80 && docker build -t vehicle-ms . && sleep 80 && docker run --name vehicle-ms -p 6005:6005 vehicle-ms"
     environment:
       PORT: '6005'
-    depends_on:
-      - vehicle-db
   ratings-db:
     image: postgres
     ports:
@@ -134,3 +134,9 @@ services:
       - "8085:80"
     links:
       - runapp-ldap
+
+volumes:
+   mongodata:
+
+networks:
+  vehicles-db:
