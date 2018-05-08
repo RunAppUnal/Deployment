@@ -88,6 +88,24 @@ services:
       PORT: '6004'
     depends_on:
       - login-db
+  bikeroutes-db:	
+    image: mongo	
+    ports:	
+      - "7002:7002"	
+    environment:	
+      - MONGO_DATA_DIR=/data/db	
+      - MONGO_LOG_DIR=/dev/null	
+      - MONGO_HOST=bikeroutes-db	
+    volumes:	
+      - /data/db:/data/db	
+    command: mongod --smallfiles --logpath=/dev/null --port 7002 -v	
+  bikeroutes-ms:	
+    build: .	
+    command: sails lift --verbose --port 6002	
+    ports:	
+      - "6002:6002"	
+    depends_on:	
+      - bikeroutes-db
   runapp-ldap:
     image: osixia/openldap:1.1.8
     container_name: runapp-ldap
