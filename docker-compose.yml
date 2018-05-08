@@ -57,6 +57,8 @@ services:
     command: bash -c "sleep 80 && docker build -t vehicle-ms . && sleep 80 && docker run --name vehicle-ms -p 6005:6005 vehicle-ms"
     environment:
       PORT: '6005'
+    depends_on:
+      - vehicles-db
   ratings-db:
     image: postgres
     ports:
