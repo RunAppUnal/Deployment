@@ -4,6 +4,7 @@ services:
     image: miavillamilca/2c_runapp_proxy
     depends_on:
       - runapp-api
+      - login-ms
     ports:
       - 80:80
   runapp-api:
@@ -28,7 +29,7 @@ services:
   routes-db:
     image: mysql:5.7.22
     ports:
-      - "7001:7001"
+      - "7001:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 123
       MYSQL_USER: runapp
@@ -37,7 +38,7 @@ services:
       MYSQL_HOST: routes-db
   routes-ms:
     image: miavillamilca/2c_routes_ms
-    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6001 -b '0.0.0.0'"
+    command: bash -c "sleep 120 && rm -f tmp/pids/server.pid && bundle exec rails db:create && bundle exec rails db:migrate && bundle exec rails s -p 6001 -b '0.0.0.0'"
     environment:
       PORT: '6001'
     depends_on:
@@ -73,7 +74,7 @@ services:
   login-db:
     image: mysql:5.7.22
     ports:
-      - "7004:7004"
+      - "7004:3306"
     environment:
       MYSQL_ROOT_PASSWORD: 123
       MYSQL_USER: runapp
@@ -82,7 +83,7 @@ services:
       MYSQL_HOST: login-db
   login-ms:
     image: miavillamilca/2c_login_ms
-    command: bash -c "sleep 80 && rm -f tmp/pids/server.pid && bundle exec rails db:migrate && bundle exec rails s -p 6004 -b '0.0.0.0'"
+    command: bash -c "sleep 120 && rm -f tmp/pids/server.pid && bundle exec rails db:create && bundle exec rails db:migrate && bundle exec rails s -p 6004 -b '0.0.0.0'"
     environment:
       PORT: '6004'
     depends_on:
