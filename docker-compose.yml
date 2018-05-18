@@ -50,7 +50,7 @@ services:
     environment:
       - MONGO_DATA_DIR=/data/db
       - MONGO_LOG_DIR=/dev/null
-      - MONGO_HOST=bikeroutes-db	
+      - MONGO_HOST=bikeroutes-db
     volumes:
       - /data/db:/data/db
     command: mongod --smallfiles --logpath=/dev/null --port 27017 -v
