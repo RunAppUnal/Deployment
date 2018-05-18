@@ -1,4 +1,4 @@
-version: '2.1'
+version: '2'
 services:
   runapp-proxy:
     image: miavillamilca/2c_runapp_proxy
@@ -44,14 +44,16 @@ services:
     depends_on:
       - routes-db
   vehicles-db:
-    image: mongo:latest
-    container_name: vehicles-db
+    image: mongo
     ports:
       - "27017:27017"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+      - MONGO_HOST=bikeroutes-db	
     volumes:
-      - "mongodata:/data/2C_vehicle_db"
-    networks:
-      - vehicles-db
+      - /data/db:/data/db
+    command: mongod --smallfiles --logpath=/dev/null --port 27017 -v
   vehicles-ms:
     image: miavillamilca/2c_vehicles_ms
     container_name: vehicles-ms
@@ -88,23 +90,23 @@ services:
       PORT: '6004'
     depends_on:
       - login-db
-  bikeroutes-db:	
-    image: mongo	
-    ports:	
-      - "7002:7002"	
-    environment:	
-      - MONGO_DATA_DIR=/data/db	
-      - MONGO_LOG_DIR=/dev/null	
-      - MONGO_HOST=bikeroutes-db	
-    volumes:	
-      - /data/db:/data/db	
-    command: mongod --smallfiles --logpath=/dev/null --port 7002 -v	
-  bikeroutes-ms:	
-    build: .	
-    command: sails lift --verbose --port 6002	
-    ports:	
-      - "6002:6002"	
-    depends_on:	
+  bikeroutes-db:
+    image: mongo
+    ports:
+      - "7002:7002"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+      - MONGO_HOST=bikeroutes-db
+    volumes:
+      - /data/db:/data/db
+    command: mongod --smallfiles --logpath=/dev/null --port 7002 -v
+  bikeroutes-ms:
+    image: miavillamilca/2c_bikeroutes_ms
+    command: sails lift --verbose --port 6002
+    ports:
+      - "6002:6002"
+    depends_on:
       - bikeroutes-db
   runapp-ldap:
     image: osixia/openldap:1.1.8
@@ -155,9 +157,7 @@ services:
       - "8085:80"
     links:
       - runapp-ldap
-
-volumes:
-   mongodata:
-
+#volumes:
+#   mongodata:
 networks:
   vehicles-db:
