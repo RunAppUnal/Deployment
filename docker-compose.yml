@@ -46,18 +46,19 @@ services:
   vehicles-db:
     image: mongo
     ports:
-      - "27017:27017"
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-      - MONGO_HOST=bikeroutes-db
-    volumes:
-      - /data/db:/data/db
-    command: mongod --smallfiles --logpath=/dev/null --port 27017 -v
+      - "7005:7005"
+    command: --smallfiles --port 7002 -vv
+    # environment:
+    #   - MONGO_DATA_DIR=/data/db
+    #   - MONGO_LOG_DIR=/dev/null
+    #   - MONGO_HOST=vehicles-db
+    # volumes:
+    #   - /data/db:/data/db
+    #command: mongod --smallfiles --logpath=/dev/null --port 7005 -v
   vehicles-ms:
     image: miavillamilca/2c_vehicles_ms
     container_name: vehicles-ms
-    command: bash -c "sleep 80 && docker build -t vehicle-ms . && sleep 80 && docker run --name vehicle-ms -p 6005:6005 vehicle-ms"
+    command: bash -c "docker build -t vehicle-ms . && sleep 80 && docker run --name vehicle-ms -p 6005:6005 vehicle-ms"
     environment:
       PORT: '6005'
     depends_on:
@@ -85,7 +86,7 @@ services:
       MYSQL_HOST: login-db
   login-ms:
     image: miavillamilca/2c_login_ms
-    command: bash -c "sleep 120 && rm -f tmp/pids/server.pid && bundle exec rails db:create && bundle exec rails db:migrate && bundle exec rails s -p 6004 -b '0.0.0.0'"
+    command: bash -c "sleep 200 && rm -f tmp/pids/server.pid && bundle exec rails db:create && bundle exec rails db:migrate && bundle exec rails s -p 6004 -b '0.0.0.0'"
     environment:
       PORT: '6004'
     depends_on:
@@ -94,13 +95,13 @@ services:
     image: mongo
     ports:
       - "7002:7002"
-    environment:
-      - MONGO_DATA_DIR=/data/db
-      - MONGO_LOG_DIR=/dev/null
-      - MONGO_HOST=bikeroutes-db
-    volumes:
-      - /data/db:/data/db
-    command: mongod --smallfiles --logpath=/dev/null --port 7002 -v
+    # environment:
+    #   - MONGO_DATA_DIR=/data/db
+    #   - MONGO_LOG_DIR=/dev/null
+    #   - MONGO_HOST=bikeroutes-db
+    # volumes:
+    #   - /data/db:/data/db
+    command: --smallfiles --port 7002 -vv
   bikeroutes-ms:
     image: miavillamilca/2c_bikeroutes_ms
     command: sails lift --verbose --port 6002
