@@ -1,0 +1,10 @@
+version: '2'
+
+services:
+  runapp-wa:
+    container_name: runapp_wa
+    image: jesusfchavarro/2c_runapp_wa
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=development

@@ -1,0 +1,164 @@
+version: '2'
+services:
+  runapp-proxy:
+    image: miavillamilca/2c_runapp_proxy
+    depends_on:
+      - runapp-api
+      - login-ms
+    ports:
+      - 80:80
+  runapp-api:
+    image: miavillamilca/2c_runapp_api
+    environment:
+      PORT: '8000'
+      SHOW_URLS: 'true'
+      VEHICLES_PORT: '6005'
+      VEHICLES_ENTRY: 'vehicles/'
+      FAVROUTES_PORT: '6005'
+      FAVROUTES_ENTRY: 'fav_routes/'
+      ROUTES_PORT: '6001'
+      ROUTES_ENTRY: 'routes/'
+      RATINGS_PORT: '6003'
+      RATINGS_ENTRY: 'ratings/'
+      AUTH_PORT: '6004'
+      AUTH_ENTRY: 'ldap/'
+      LOGIN_PORT: '6004'
+      LOGIN_ENTRY: 'auth/'
+      BIKEROUTES_PORT: '6002'
+      BIKEROUTES_ENTRY: 'route/'
+  routes-db:
+    image: mysql:5.7.22
+    ports:
+      - "7001:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_USER: runapp
+      MYSQL_PASSWORD: 123
+      MYSQL_DATABASE: routes
+      MYSQL_HOST: routes-db
+  routes-ms:
+    image: miavillamilca/2c_routes_ms
+    command: bash -c "sleep 120 && rm -f tmp/pids/server.pid && bundle exec rails db:create && bundle exec rails db:migrate && bundle exec rails s -p 6001 -b '0.0.0.0'"
+    environment:
+      PORT: '6001'
+    depends_on:
+      - routes-db
+  vehicles-db:
+    image: mongo
+    ports:
+      - "7005:7005"
+    command: --smallfiles --port 7002 -vv
+    # environment:
+    #   - MONGO_DATA_DIR=/data/db
+    #   - MONGO_LOG_DIR=/dev/null
+    #   - MONGO_HOST=vehicles-db
+    # volumes:
+    #   - /data/db:/data/db
+    #command: mongod --smallfiles --logpath=/dev/null --port 7005 -v
+  vehicles-ms:
+    image: miavillamilca/2c_vehicles_ms
+    container_name: vehicles-ms
+    command: bash -c "docker build -t vehicle-ms . && sleep 80 && docker run --name vehicle-ms -p 6005:6005 vehicle-ms"
+    environment:
+      PORT: '6005'
+    depends_on:
+      - vehicles-db
+  ratings-db:
+    image: postgres
+    ports:
+      - "7003:5432"
+  ratings-ms:
+    image: miavillamilca/2c_ratings_ms
+    command: python3 manage.py runserver 0.0.0.0:6003
+    environment:
+      PORT: '6003'
+    depends_on:
+      - ratings-db
+  login-db:
+    image: mysql:5.7.22
+    ports:
+      - "7004:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_USER: runapp
+      MYSQL_PASSWORD: 123
+      MYSQL_DATABASE: login
+      MYSQL_HOST: login-db
+  login-ms:
+    image: miavillamilca/2c_login_ms
+    command: bash -c "sleep 200 && rm -f tmp/pids/server.pid && bundle exec rails db:create && bundle exec rails db:migrate && bundle exec rails s -p 6004 -b '0.0.0.0'"
+    environment:
+      PORT: '6004'
+    depends_on:
+      - login-db
+  bikeroutes-db:
+    image: mongo
+    ports:
+      - "7002:7002"
+    # environment:
+    #   - MONGO_DATA_DIR=/data/db
+    #   - MONGO_LOG_DIR=/dev/null
+    #   - MONGO_HOST=bikeroutes-db
+    # volumes:
+    #   - /data/db:/data/db
+    command: --smallfiles --port 7002 -vv
+  bikeroutes-ms:
+    image: miavillamilca/2c_bikeroutes_ms
+    command: sails lift --verbose --port 6002
+    ports:
+      - "6002:6002"
+    depends_on:
+      - bikeroutes-db
+  runapp-ldap:
+    image: osixia/openldap:1.1.8
+    container_name: runapp-ldap
+    environment:
+      COMPOSE_HTTP_TIMEOUT: 200
+      LDAP_LOG_LEVEL: "256"
+      LDAP_ORGANISATION: "Software Architecture"
+      LDAP_DOMAIN: "runapp.unal.edu.co"
+      LDAP_BASE_DN: ""
+      LDAP_ADMIN_PASSWORD: "admin"
+      LDAP_CONFIG_PASSWORD: "config"
+      LDAP_READONLY_USER: "false"
+      #LDAP_READONLY_USER_USERNAME: "readonly"
+      #LDAP_READONLY_USER_PASSWORD: "readonly"
+      LDAP_BACKEND: "hdb"
+      LDAP_TLS: "true"
+      LDAP_TLS_CRT_FILENAME: "ldap.crt"
+      LDAP_TLS_KEY_FILENAME: "ldap.key"
+      LDAP_TLS_CA_CRT_FILENAME: "ca.crt"
+      LDAP_TLS_ENFORCE: "false"
+      LDAP_TLS_CIPHER_SUITE: "SECURE256:-VERS-SSL3.0"
+      LDAP_TLS_PROTOCOL_MIN: "3.1"
+      LDAP_TLS_VERIFY_CLIENT: "demand"
+      LDAP_REPLICATION: "false"
+      #LDAP_REPLICATION_CONFIG_SYNCPROV: "binddn="cn=admin,cn=config" bindmethod=simple credentials=$LDAP_CONFIG_PASSWORD searchbase="cn=config" type=refreshAndPersist retry="60 +" timeout=1 starttls=critical"
+      #LDAP_REPLICATION_DB_SYNCPROV: "binddn="cn=admin,$LDAP_BASE_DN" bindmethod=simple credentials=$LDAP_ADMIN_PASSWORD searchbase="$LDAP_BASE_DN" type=refreshAndPersist interval=00:00:00:10 retry="60 +" timeout=1 starttls=critical"
+      #LDAP_REPLICATION_HOSTS: "#PYTHON2BASH:['ldap://ldap.example.org','ldap://ldap2.example.org']"
+      LDAP_REMOVE_CONFIG_AFTER_SETUP: "true"
+      LDAP_SSL_HELPER_PREFIX: "ldap"
+    tty: true
+    stdin_open: true
+    volumes:
+      - /var/lib/ldap
+      - /etc/ldap/slapd.d
+      - /container/service/slapd/assets/certs/
+    ports:
+      - "389:389"
+      - "636:636"
+    hostname: "runapp.org"
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: "runapp-ldap"
+      PHPLDAPADMIN_HTTPS: "false"
+    ports:
+      - "8085:80"
+    links:
+      - runapp-ldap
+#volumes:
+#   mongodata:
+#networks:
+#  vehicles-db:
