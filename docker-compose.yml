@@ -159,5 +159,5 @@ services:
       - runapp-ldap
 #volumes:
 #   mongodata:
-networks:
-  vehicles-db:
+#networks:
+#  vehicles-db:
