@@ -4,7 +4,7 @@ login-ms:
   scale: 2
 ratings-ms:
   scale: 2
-login-ms:
+routes-ms:
   scale: 2
 bikeroutes-ms:
   scale: 2
@@ -14,3 +14,18 @@ routes-db:
   scale: 2
 login-db:
   scale: 2
+lb:
+  scale: 1
+  lb_config:
+    port_rules:
+    - priority: 1
+      protocol: https
+      source_port: 8000
+      target_port: 8050
+      service: runapp-api
+  health_check:
+    port: 42
+    interval: 2000
+    unhealthy_threshold: 3
+    healthy_threshold: 2
+    response_timeout: 5000

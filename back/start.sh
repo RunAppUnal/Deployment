@@ -5,5 +5,5 @@
 --secret-key YYVEKU7jg1KAJ1V5Rnarq4nNBQxTyzV6UQGM6nTz \
 -f docker-compose.yml \
 --verbose up \
--d --force-upgrade \
+--force-upgrade \
 --confirm-upgrade 

@@ -55,7 +55,7 @@ services:
       io.rancher.scheduler.affinity:container_label_soft_ne: io.rancher.stack_service.name=$${stack_name}/$${service_name}
     ports:
       - "7005:7005"
-    command: --smallfiles --port 7002 -vv
+    command: --smallfiles --port 7005 -vv
     # environment:
     #   - MONGO_DATA_DIR=/data/db
     #   - MONGO_LOG_DIR=/dev/null
@@ -180,6 +180,15 @@ services:
       - "8085:80"
     links:
       - runapp-ldap
+  lb-runapp-api:
+    image: rancher/lb-service-haproxy:v0.7.15
+    ports:
+    - 8050:9797/tcp
+    labels:
+      io.rancher.container.agent.role: environmentAdmin,agent
+      io.rancher.container.agent_service.drain_provider: 'true'
+      io.rancher.container.create_agent: 'true'
+
 #volumes:
 #   mongodata:
 #networks:
